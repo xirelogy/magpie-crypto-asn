@@ -1,0 +1,29 @@
+{
+  "name": "xirelogy/magpie-crypto-asn",
+  "description": "ASN related crypto library",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "JingXiang Tou",
+      "email": "jx@tou.st"
+    }
+  ],
+  "require": {
+    "ext-gmp": "*",
+    "sop/asn1": "^4.1",
+    "xirelogy/magpie-core": "^0.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "MagpieLib\\CryptoAsn\\": "src"
+    }
+  },
+  "extra": {
+    "magpie": {
+      "classes": [
+        "MagpieLib\\CryptoAsn\\System\\CryptoAsnSetup"
+      ]
+    }
+  }
+}
