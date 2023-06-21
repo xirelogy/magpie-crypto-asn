@@ -99,12 +99,13 @@ abstract class AsnElement implements Packable, TypeClassable, AsnTagClassable
 
     /**
      * Expect the given value to be of specific element type
-     * @param AsnElement $value
+     * @param AsnElement|null $value
      * @return static
      * @throws SafetyCommonException
      */
-    public static final function cast(self $value) : static
+    public static final function cast(?self $value) : static
     {
+        if ($value === null) throw new NullException();
         if (!is_subclass_of($value, static::class) && !is_a($value, static::class)) throw new NotOfTypeException($value, static::class);
         return $value;
     }
