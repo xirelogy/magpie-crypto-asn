@@ -114,7 +114,6 @@ class IpAddressGeneralName extends GeneralName
                 $ret[] = $hex;
             }
             return implode(':', $ret);
-            dd($dataStr);
         }
 
         throw new UnsupportedValueException($data);
