@@ -5,8 +5,8 @@ namespace MagpieLib\CryptoAsn\Cryptos\X509;
 use Carbon\CarbonInterface;
 use Magpie\Cryptos\Algorithms\AsymmetricCryptos\PublicKey as MagpiePublicKey;
 use Magpie\Cryptos\Algorithms\Hashes\Hasher as MagpieHasher;
+use Magpie\Cryptos\Contents\BinaryBlockContent;
 use Magpie\Cryptos\Contents\BlockContent;
-use Magpie\Cryptos\Contents\CryptoFormatContent;
 use Magpie\Cryptos\Contents\ExportOption;
 use Magpie\Cryptos\Encodings\Pem;
 use Magpie\Cryptos\Exceptions\CryptoException;
@@ -14,7 +14,6 @@ use Magpie\Cryptos\Numerals;
 use Magpie\Cryptos\X509\Certificate as MagpieCertificate;
 use Magpie\Cryptos\X509\Name as MagpieName;
 use Magpie\Exceptions\SafetyCommonException;
-use Magpie\Exceptions\UnsupportedValueException;
 use Magpie\General\Factories\Annotations\FactoryTypeClass;
 use Magpie\General\Packs\PackContext;
 use Magpie\General\Sugars\Excepts;
@@ -23,7 +22,6 @@ use MagpieLib\CryptoAsn\Asn1\AsnInteger;
 use MagpieLib\CryptoAsn\Asn1\AsnSequence;
 use MagpieLib\CryptoAsn\Concepts\AsnDecoderEventHandleable;
 use MagpieLib\CryptoAsn\Cryptos\OpenContext;
-use MagpieLib\CryptoAsn\Der;
 use MagpieLib\CryptoAsn\FactoryPresets\AsymmSignatures\AsymmSignature;
 use MagpieLib\CryptoAsn\Objects\X509Ext\AuthorityKeyIdentifier;
 use MagpieLib\CryptoAsn\Objects\X509Ext\SubjectAlternativeName;
@@ -308,19 +306,15 @@ class OpenCertificate extends MagpieCertificate
     /**
      * @inheritDoc
      */
-    protected static function specificImport(CryptoFormatContent $source) : static
+    protected static function specificImportBinary(BinaryBlockContent $source, ?string $password) : ?static
     {
         $handle = OpenContext::getDecoderEventHandle();
 
-        foreach (Der::getDerBytes($source) as $block) {
-            if ($block->type === null || $block->type === 'CERTIFICATE') {
-                $element = AsnSequence::decodeFrom($block->data);
-                $tbsElement = $element->getElementAt(0);
-                return new static(CertificateSyntax::from($element, $handle), $block->data, $tbsElement->encodeDer(), $handle);
-            }
-        }
+        if ($source->type !== null && $source->type !== 'CERTIFICATE') return null;
 
-        throw new UnsupportedValueException($source);
+        $element = AsnSequence::decodeFrom($source->data);
+        $tbsElement = $element->getElementAt(0);
+        return new static(CertificateSyntax::from($element, $handle), $source->data, $tbsElement->encodeDer(), $handle);
     }
 
 
