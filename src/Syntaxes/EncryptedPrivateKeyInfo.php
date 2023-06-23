@@ -3,6 +3,7 @@
 namespace MagpieLib\CryptoAsn\Syntaxes;
 
 use Magpie\Cryptos\Exceptions\CryptoException;
+use Magpie\Cryptos\Exceptions\PasswordRequiredCryptoException;
 use Magpie\Exceptions\SafetyCommonException;
 use Magpie\General\Packs\PackContext;
 use Magpie\Objects\BinaryData;
@@ -44,14 +45,28 @@ class EncryptedPrivateKeyInfo extends Syntax
      * Decrypt the encrypted data using given password
      * @param BinaryData|string $password
      * @param AsnDecoderEventHandleable|null $handle
+     * @return BinaryData
+     * @throws SafetyCommonException
+     * @throws CryptoException
+     */
+    public function decryptBinary(BinaryData|string $password, ?AsnDecoderEventHandleable $handle = null) : BinaryData
+    {
+        $scheme = Scheme::fromAlgorithmIdentifier($this->encryptionAlgorithm, $handle);
+        return $scheme->decrypt($this->encryptedData, $password, $handle);
+    }
+
+
+    /**
+     * Decrypt the encrypted data using given password (into PrivateKeyInfo structure)
+     * @param BinaryData|string $password
+     * @param AsnDecoderEventHandleable|null $handle
      * @return PrivateKeyInfo
      * @throws SafetyCommonException
      * @throws CryptoException
      */
     public function decrypt(BinaryData|string $password, ?AsnDecoderEventHandleable $handle = null) : PrivateKeyInfo
     {
-        $scheme = Scheme::fromAlgorithmIdentifier($this->encryptionAlgorithm, $handle);
-        $plainBytes = $scheme->decrypt($this->encryptedData, $password, $handle);
+        $plainBytes = $this->decryptBinary($password, $handle);
 
         $element = AsnElement::decodeFrom($plainBytes);
         return PrivateKeyInfo::from($element, $handle);
@@ -94,6 +109,25 @@ class EncryptedPrivateKeyInfo extends Syntax
         $encryptedData = AsnOctetString::cast($cursor->requiresNextElement())->getString();
 
         return new static($encryptionAlgorithm, $encryptedData);
+    }
+
+
+    /**
+     * Decrypt element to element (expecting EncryptedPrivateKeyInfo) using supplied password
+     * @param AsnElement $value
+     * @param string|null $password
+     * @param AsnDecoderEventHandleable|null $handle
+     * @return AsnElement
+     * @throws SafetyCommonException
+     * @throws CryptoException
+     */
+    public static function decryptElement(AsnElement $value, ?string $password, ?AsnDecoderEventHandleable $handle = null) : AsnElement
+    {
+        $info = static::from($value, $handle);
+        if ($password === null) throw new PasswordRequiredCryptoException();
+
+        $decrypted = $info->decryptBinary($password, $handle);
+        return AsnElement::decodeFrom($decrypted);
     }
 
 
