@@ -62,6 +62,6 @@ abstract class Algorithm extends CommonObject implements OidAssociable
      */
     protected static final function requiresAlgorithmIdentifierParameters(AlgorithmIdentifier $identifier) : AsnElement
     {
-        return $identifier->parameters ?? throw new MissingArgumentException('paramters');
+        return $identifier->parameters ?? throw new MissingArgumentException('parameters');
     }
 }
