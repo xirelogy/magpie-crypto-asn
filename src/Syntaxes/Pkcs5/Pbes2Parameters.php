@@ -9,6 +9,10 @@ use MagpieLib\CryptoAsn\Concepts\AsnDecoderEventHandleable;
 use MagpieLib\CryptoAsn\Syntaxes\AlgorithmIdentifier;
 use MagpieLib\CryptoAsn\Syntaxes\Syntax;
 
+/**
+ * PBES2 parameters in AlgorithmIdentifier
+ * @link https://www.rfc-editor.org/rfc/rfc2898#appendix-A.4
+ */
 class Pbes2Parameters extends Syntax
 {
     /**
