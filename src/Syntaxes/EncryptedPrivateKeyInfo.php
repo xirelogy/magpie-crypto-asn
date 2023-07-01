@@ -11,7 +11,7 @@ use MagpieLib\CryptoAsn\Asn1\AsnElement;
 use MagpieLib\CryptoAsn\Asn1\AsnOctetString;
 use MagpieLib\CryptoAsn\Asn1\AsnSequence;
 use MagpieLib\CryptoAsn\Concepts\AsnDecoderEventHandleable;
-use MagpieLib\CryptoAsn\Objects\Pkcs5\Scheme\Scheme;
+use MagpieLib\CryptoAsn\Objects\Pkcs5\Scheme\Scheme as Pkcs5Scheme;
 
 /**
  * EncryptedPrivateKeyInfo (PKCS#8)
@@ -51,7 +51,7 @@ class EncryptedPrivateKeyInfo extends Syntax
      */
     public function decryptBinary(BinaryData|string $password, ?AsnDecoderEventHandleable $handle = null) : BinaryData
     {
-        $scheme = Scheme::fromAlgorithmIdentifier($this->encryptionAlgorithm, $handle);
+        $scheme = Pkcs5Scheme::fromAlgorithmIdentifier($this->encryptionAlgorithm, $handle);
         return $scheme->decrypt($this->encryptedData, $password, $handle);
     }
 
