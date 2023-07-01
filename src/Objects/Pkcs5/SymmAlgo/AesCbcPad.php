@@ -4,6 +4,7 @@ namespace MagpieLib\CryptoAsn\Objects\Pkcs5\SymmAlgo;
 
 use Magpie\Cryptos\Algorithms\SymmetricCryptos\CipherSetup;
 use Magpie\Cryptos\Algorithms\SymmetricCryptos\CommonCipherAlgoTypeClass;
+use Magpie\Cryptos\Algorithms\SymmetricCryptos\CommonCipherMode;
 use Magpie\Cryptos\Paddings\Pkcs7Padding;
 use Magpie\Objects\BinaryData;
 use MagpieLib\CryptoAsn\Concepts\AsnDecoderEventHandleable;
@@ -31,10 +32,9 @@ abstract class AesCbcPad extends CommonSymmAlgo
         $numBits = $this->getNumBits();
         $blockSize = floor($numBits / 8);
 
-        return CipherSetup::initialize(CommonCipherAlgoTypeClass::AES, $numBits)
+        return CipherSetup::initialize(CommonCipherAlgoTypeClass::AES, $numBits, CommonCipherMode::CBC)
             ->withKey($key)
             ->withIv($this->iv)
-            ->withMode('cbc')
             ->withPadding(new Pkcs7Padding($blockSize))
             ;
     }

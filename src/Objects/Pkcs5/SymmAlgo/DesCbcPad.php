@@ -4,6 +4,7 @@ namespace MagpieLib\CryptoAsn\Objects\Pkcs5\SymmAlgo;
 
 use Magpie\Cryptos\Algorithms\SymmetricCryptos\CipherSetup;
 use Magpie\Cryptos\Algorithms\SymmetricCryptos\CommonCipherAlgoTypeClass;
+use Magpie\Cryptos\Algorithms\SymmetricCryptos\CommonCipherMode;
 use Magpie\Cryptos\Paddings\Pkcs7Padding;
 use Magpie\General\Factories\Annotations\FactoryTypeClass;
 use Magpie\Objects\BinaryData;
@@ -39,10 +40,9 @@ class DesCbcPad extends CommonSymmAlgo
      */
     protected function createCipherSetup(BinaryData $key, ?AsnDecoderEventHandleable $handle) : CipherSetup
     {
-        return CipherSetup::initialize(CommonCipherAlgoTypeClass::DES)
+        return CipherSetup::initialize(CommonCipherAlgoTypeClass::DES, CommonCipherMode::CBC)
             ->withKey($key)
             ->withIv($this->iv)
-            ->withMode('cbc')
             ->withPadding(new Pkcs7Padding(8))
             ;
     }
