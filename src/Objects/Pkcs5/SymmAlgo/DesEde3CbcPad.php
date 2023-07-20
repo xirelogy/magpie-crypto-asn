@@ -40,7 +40,7 @@ class DesEde3CbcPad extends CommonSymmAlgo
      */
     protected function createCipherSetup(BinaryData $key, ?AsnDecoderEventHandleable $handle) : CipherSetup
     {
-        return CipherSetup::initialize(CommonCipherAlgoTypeClass::TRIPLE_DES_EDE3, CommonCipherMode::CBC)
+        return CipherSetup::initialize(CommonCipherAlgoTypeClass::DES_EDE3, CommonCipherMode::CBC)
             ->withKey($key)
             ->withIv($this->iv)
             ->withPadding(new Pkcs7Padding(8))
