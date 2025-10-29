@@ -30,13 +30,17 @@ abstract class AesCbcPad extends CommonSymmAlgo
     protected final function createCipherSetup(BinaryData $key, ?AsnDecoderEventHandleable $handle) : CipherSetup
     {
         $numBits = $this->getNumBits();
-        $blockSize = floor($numBits / 8);
 
-        return CipherSetup::initialize(CommonCipherAlgoTypeClass::AES, $numBits, CommonCipherMode::CBC)
+        $ret = CipherSetup::initialize(CommonCipherAlgoTypeClass::AES, $numBits, CommonCipherMode::CBC)
             ->withKey($key)
             ->withIv($this->iv)
-            ->withPadding(new Pkcs7Padding($blockSize))
             ;
+
+        // Padding block size is defined in "FIPS PUB 197 — Advanced Encryption Standard (AES)" at §3.4
+        // @link https://csrc.nist.gov/pubs/fips/197/final
+        //
+        $ret->withPadding(Pkcs7Padding::forCipherSetup($ret));
+        return $ret;
     }
 
 
