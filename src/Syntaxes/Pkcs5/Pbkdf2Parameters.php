@@ -9,6 +9,7 @@ use Magpie\Objects\Traits\CommonObjectPackAll;
 use MagpieLib\CryptoAsn\Asn1\AsnBinaryStringElement;
 use MagpieLib\CryptoAsn\Asn1\AsnElement;
 use MagpieLib\CryptoAsn\Asn1\AsnInteger;
+use MagpieLib\CryptoAsn\Asn1\AsnNull;
 use MagpieLib\CryptoAsn\Asn1\AsnOctetString;
 use MagpieLib\CryptoAsn\Asn1\AsnSequence;
 use MagpieLib\CryptoAsn\Concepts\AsnDecoderEventHandleable;
@@ -22,6 +23,11 @@ use MagpieLib\CryptoAsn\Syntaxes\Syntax;
 class Pbkdf2Parameters extends Syntax
 {
     use CommonObjectPackAll;
+
+    /**
+     * The default OID for PRF if not specified, which is HMAC-SHA1
+     */
+    public const DEFAULT_PRF_OID = '1.2.840.113549.2.7';
 
     /**
      * @var BinaryData|AlgorithmIdentifier Salt value
@@ -71,7 +77,9 @@ class Pbkdf2Parameters extends Syntax
             $ret[] = AsnInteger::create($this->keyLength);
         }
 
-        $ret[] = $this->prf->to();
+        if (!static::isDefaultPrf($this->prf)) {
+            $ret[] = $this->prf->to();
+        }
 
         return AsnSequence::create($ret);
     }
@@ -88,15 +96,15 @@ class Pbkdf2Parameters extends Syntax
         $salt = static::decodeSalt($cursor->requiresNextElement(), $handle);
         $iterationCount = AsnInteger::cast($cursor->requiresNextElement())->getIntegerValue();
 
-        $subElement = $cursor->requiresNextElement();
+        $subElement = $cursor->getNextElement();
 
         $keyLength = null;
         if ($subElement instanceof AsnInteger) {
             $keyLength = AsnInteger::cast($subElement)->getIntegerValue();
-            $subElement = $cursor->requiresNextElement();
+            $subElement = $cursor->getNextElement();
         }
 
-        $prf = AlgorithmIdentifier::from($subElement, $handle);
+        $prf = static::decodePrf($subElement, $handle);
 
         return new static($salt, $iterationCount, $keyLength, $prf);
     }
@@ -132,6 +140,38 @@ class Pbkdf2Parameters extends Syntax
         }
 
         // Assumed to be other source
+        return AlgorithmIdentifier::from($element, $handle);
+    }
+
+
+    /**
+     * Determine if the given PRF is default PRF
+     * @param AlgorithmIdentifier $prf
+     * @return bool
+     */
+    protected static function isDefaultPrf(AlgorithmIdentifier $prf) : bool
+    {
+        if ($prf->algorithm->getString() != static::DEFAULT_PRF_OID) return false;
+
+        return $prf->parameters === null || $prf->parameters instanceof AsnNull;
+    }
+
+
+    /**
+     * Decode for PRF
+     * @param AsnElement|null $element
+     * @param AsnDecoderEventHandleable|null $handle
+     * @return AlgorithmIdentifier
+     * @throws SafetyCommonException
+     * @throws CryptoException
+     */
+    protected static function decodePrf(?AsnElement $element, ?AsnDecoderEventHandleable $handle) : AlgorithmIdentifier
+    {
+        if ($element === null) {
+            // According to RFC8018
+            return AlgorithmIdentifier::createWithNull(static::DEFAULT_PRF_OID);
+        }
+
         return AlgorithmIdentifier::from($element, $handle);
     }
 }
